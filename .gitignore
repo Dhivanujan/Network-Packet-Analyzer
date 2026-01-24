@@ -45,3 +45,9 @@ reports/
 
 # Local configuration
 config/local.properties
+
+# Node / frontend
+node_modules/
+dist/
+*.log
+frontend/.vite/

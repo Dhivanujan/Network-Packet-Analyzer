@@ -1,0 +1,254 @@
+:root {
+  --bg: #050816;
+  --bg-panel: #0f172a;
+  --bg-panel-alt: #020617;
+  --accent: #38bdf8;
+  --accent-soft: rgba(56, 189, 248, 0.1);
+  --text: #e5e7eb;
+  --muted: #6b7280;
+  --danger: #f97373;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top, #1e293b 0, #020617 45%, #000 100%);
+  color: var(--text);
+}
+
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 2rem 2rem;
+  gap: 1.5rem;
+}
+
+.app-header {
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: radial-gradient(circle at top left, #0f172a, #020617);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.8);
+}
+
+.app-header h1 {
+  margin: 0 0 0.25rem;
+}
+
+.app-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.status-bar {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+}
+
+.status-dot.online {
+  background: #22c55e;
+}
+
+.status-dot.offline {
+  background: #ef4444;
+}
+
+.stat-pill {
+  margin-left: auto;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.layout-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-auto-rows: minmax(0, auto);
+  gap: 1.25rem;
+}
+
+.panel {
+  background: var(--bg-panel);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem 1.25rem;
+  box-shadow: 0 18px 35px rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.panel.wide {
+  grid-column: 1 / span 2;
+}
+
+.panel h2 {
+  margin: 0 0 0.75rem;
+}
+
+.app-footer {
+  margin-top: auto;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.filter-bar {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-btn {
+  border-radius: 9999px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  padding: 0.25rem 0.9rem;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-btn:hover {
+  border-color: var(--accent);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.filter-btn.active {
+  background: var(--accent);
+  color: #020617;
+  border-color: transparent;
+}
+
+.table-wrapper {
+  max-height: 360px;
+  overflow: auto;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  background: var(--bg-panel-alt);
+}
+
+.packet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.packet-table thead {
+  position: sticky;
+  top: 0;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(8px);
+  z-index: 1;
+}
+
+.packet-table th,
+.packet-table td {
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+}
+
+.packet-table tbody tr:nth-child(even) {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.packet-table tbody tr:hover {
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.empty-cell {
+  text-align: center;
+  padding: 1.5rem 0.5rem;
+  color: var(--muted);
+}
+
+.chart-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.chart-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chart-label {
+  width: 3rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.chart-bar-bg {
+  flex: 1;
+  height: 0.6rem;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.8);
+  overflow: hidden;
+}
+
+.chart-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #38bdf8);
+}
+
+.chart-value {
+  width: 2.5rem;
+  text-align: right;
+  font-size: 0.75rem;
+}
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.alert-item {
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  background: rgba(127, 29, 29, 0.25);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+}
+
+.alert-time {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.alert-text {
+  font-size: 0.82rem;
+  color: #fecaca;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel.wide {
+    grid-column: auto;
+  }
+}
