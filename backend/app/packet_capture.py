@@ -49,9 +49,16 @@ def start_capture(
         Optional BPF expression (e.g. "tcp", "udp", "icmp").
     """
 
+    # Capture the main event loop so we can safely schedule work from
+    # the background capture thread back onto the asyncio loop.
     loop = asyncio.get_event_loop()
 
     def _handle_raw(pkt: Packet) -> None:
+        # Fast path: if the queue is full, drop the packet to avoid
+        # back‑pressure / memory issues during spikes.
+        if packet_queue.full():
+            return
+
         model = analyze_packet(pkt)
         if model is None:
             return

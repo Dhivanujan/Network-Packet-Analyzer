@@ -74,6 +74,11 @@ function App() {
     return packets.filter((p) => p.protocol === protocolFilter)
   }, [packets, protocolFilter])
 
+  const protocolEntries = useMemo(
+    () => Object.entries(stats.protocol_counts || {}).sort((a, b) => a[0].localeCompare(b[0])),
+    [stats.protocol_counts],
+  )
+
   return (
     <div className="app-root">
       <header className="app-header">
@@ -83,6 +88,16 @@ function App() {
           <span className={connected ? 'status-dot online' : 'status-dot offline'} />
           <span>{connected ? 'Live stream connected' : 'Disconnected'}</span>
           <span className="stat-pill">Total packets: {stats.total_packets}</span>
+          {protocolEntries.length > 0 && (
+            <div className="stat-chips">
+              {protocolEntries.map(([proto, count]) => (
+                <span key={proto} className="stat-chip">
+                  <span className="stat-chip-label">{proto}</span>
+                  <span>{count}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </header>
 

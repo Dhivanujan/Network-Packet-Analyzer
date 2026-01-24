@@ -47,7 +47,10 @@ app.add_middleware(
 
 # Shared runtime state -----------------------------------------------------
 
-packet_queue: "asyncio.Queue[PacketModel]" = asyncio.Queue()
+# Bounded queue prevents unbounded memory growth under heavy traffic. When
+# the queue is full, new packets are simply dropped by the capture thread,
+# which is acceptable for a monitoring dashboard.
+packet_queue: "asyncio.Queue[PacketModel]" = asyncio.Queue(maxsize=1000)
 anomaly_detector = AnomalyDetector()
 ws_manager = WebSocketManager()
 

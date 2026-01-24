@@ -74,6 +74,30 @@ body {
   color: var(--accent);
 }
 
+.stat-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-left: 0.75rem;
+}
+
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.16rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  font-size: 0.75rem;
+}
+
+.stat-chip-label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
 .layout-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -236,6 +260,30 @@ body {
 .alert-text {
   font-size: 0.82rem;
   color: #fecaca;
+}
+
+.proto {
+  font-weight: 600;
+}
+
+.proto-tcp {
+  color: #38bdf8;
+}
+
+.proto-udp {
+  color: #22c55e;
+}
+
+.proto-icmp {
+  color: #eab308;
+}
+
+.proto-ip {
+  color: #a855f7;
+}
+
+.proto-other {
+  color: #f97373;
 }
 
 .muted {

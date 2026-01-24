@@ -40,7 +40,7 @@ function PacketTable({ packets }) {
                   {p.dst_ip}
                   {p.dst_port ? `:${p.dst_port}` : ''}
                 </td>
-                <td>{p.protocol}</td>
+                <td className={`proto proto-${String(p.protocol).toLowerCase()}`}>{p.protocol}</td>
                 <td>{p.length}</td>
               </tr>
             ))
