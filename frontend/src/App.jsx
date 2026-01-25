@@ -15,6 +15,8 @@ function App() {
   const [alerts, setAlerts] = useState([])
   const [stats, setStats] = useState({ total_packets: 0, protocol_counts: {} })
   const [connected, setConnected] = useState(false)
+  const [paused, setPaused] = useState(false)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     const ws = new WebSocket(WS_URL)
@@ -28,6 +30,7 @@ function App() {
         const msg = JSON.parse(event.data)
         if (msg.type === 'packet') {
           setPackets((prev) => {
+            if (paused) return prev
             const next = [msg.data, ...prev]
             return next.slice(0, MAX_PACKETS)
           })
@@ -63,16 +66,36 @@ function App() {
   }, [])
 
   const filteredPackets = useMemo(() => {
-    if (protocolFilter === 'ALL') return packets
+    let data = packets
+
     if (protocolFilter === 'HTTP') {
-      return packets.filter((p) => {
+      data = data.filter((p) => {
         if (p.protocol !== 'TCP') return false
         const ports = [p.src_port, p.dst_port].filter(Boolean)
         return ports.some((port) => [80, 443, 8080, 8000].includes(port))
       })
+    } else if (protocolFilter !== 'ALL') {
+      data = data.filter((p) => p.protocol === protocolFilter)
     }
-    return packets.filter((p) => p.protocol === protocolFilter)
-  }, [packets, protocolFilter])
+
+    const term = search.trim().toLowerCase()
+    if (!term) return data
+
+    return data.filter((p) => {
+      const fields = [
+        p.src_ip,
+        p.dst_ip,
+        p.protocol,
+        p.src_port != null ? String(p.src_port) : '',
+        p.dst_port != null ? String(p.dst_port) : '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      return fields.includes(term)
+    })
+  }, [packets, protocolFilter, search])
 
   const protocolEntries = useMemo(
     () => Object.entries(stats.protocol_counts || {}).sort((a, b) => a[0].localeCompare(b[0])),
@@ -103,7 +126,25 @@ function App() {
 
       <main className="layout-grid">
         <section className="panel wide">
-          <ProtocolFilterBar value={protocolFilter} onChange={setProtocolFilter} />
+          <div className="toolbar-row">
+            <ProtocolFilterBar value={protocolFilter} onChange={setProtocolFilter} />
+            <div className="toolbar-actions">
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Filter by IP, port, or protocol..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <button
+                type="button"
+                className={paused ? 'pill-button secondary' : 'pill-button'}
+                onClick={() => setPaused((p) => !p)}
+              >
+                {paused ? 'Resume stream' : 'Pause stream'}
+              </button>
+            </div>
+          </div>
           <PacketTable packets={filteredPackets} />
         </section>
 
@@ -114,7 +155,7 @@ function App() {
 
         <section className="panel">
           <h2>Alerts</h2>
-          <AlertPanel alerts={alerts} />
+          <AlertPanel alerts={alerts} onClear={() => setAlerts([])} />
         </section>
       </main>
 
