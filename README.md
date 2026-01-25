@@ -159,6 +159,31 @@ npm run dev
 
 ---
 
+## Optional CLI Analyzer (python_analyzer/)
+
+In addition to the full‑stack app, this repo includes a standalone,
+terminal‑based packet analyzer in `python_analyzer/`.
+
+### Quick Start (CLI)
+
+```bash
+cd python_analyzer
+pip install scapy  # and ensure Npcap/libpcap is installed
+
+python -m main --help
+python -m main -i YOUR_INTERFACE_NAME -f tcp
+```
+
+The CLI tool:
+
+- Captures live traffic from a chosen interface.
+- Prints a live textual summary of packets.
+- Logs detailed data under `python_analyzer/logs/` (packets + summary report).
+
+For full details, see `python_analyzer/README.md`.
+
+---
+
 ## Screenshots (add your own)
 
 - Dashboard overview – packet table + charts.
