@@ -32,7 +32,6 @@ Folder layout (top level):
 ```text
 backend/           # FastAPI + scapy backend
 frontend/          # React + Vite dashboard
-python_analyzer/   # Optional standalone CLI analyzer (Python only)
 README.md
 ```
 
