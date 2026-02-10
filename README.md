@@ -8,6 +8,41 @@ packet **headers** (Ethernet/IP/TCP/UDP/ICMP) and simple anomaly detection.
 
 ---
 
+## Quick Start
+
+1. Start the backend (API + packet capture):
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+2. Start the frontend dashboard:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+3. Open the dashboard in your browser:
+
+- http://localhost:5173
+
+---
+
+## Prerequisites
+
+- Python 3.9+ (recommended)
+- Node.js 18+ and npm
+- Packet capture library:
+	- Windows: Npcap
+	- Linux/macOS: libpcap (usually preinstalled)
+- Sufficient privileges to capture packets on the selected interface
+
+---
+
 ## Architecture Overview
 
 - **Backend** – Python 3, FastAPI, scapy
@@ -155,31 +190,6 @@ npm run dev
 
 4. Generate some traffic (web browsing, `ping`, etc.).
 5. Watch packets, protocol distribution, and alerts update in real time.
-
----
-
-## Optional CLI Analyzer (python_analyzer/)
-
-In addition to the full‑stack app, this repo includes a standalone,
-terminal‑based packet analyzer in `python_analyzer/`.
-
-### Quick Start (CLI)
-
-```bash
-cd python_analyzer
-pip install scapy  # and ensure Npcap/libpcap is installed
-
-python -m main --help
-python -m main -i YOUR_INTERFACE_NAME -f tcp
-```
-
-The CLI tool:
-
-- Captures live traffic from a chosen interface.
-- Prints a live textual summary of packets.
-- Logs detailed data under `python_analyzer/logs/` (packets + summary report).
-
-For full details, see `python_analyzer/README.md`.
 
 ---
 
