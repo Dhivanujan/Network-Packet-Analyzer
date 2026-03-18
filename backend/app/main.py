@@ -23,6 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .anomaly_detector import AnomalyDetector
+from .database import connect as db_connect, disconnect as db_disconnect, insert_packet, insert_anomaly, get_recent_packets, get_anomalies, get_protocol_stats, get_total_packet_count
 from .models import AnomalyEventModel, PacketMessage, PacketModel
 from .packet_capture import list_interfaces, start_capture, default_interface
 from .websocket_manager import WebSocketManager
@@ -63,6 +64,12 @@ async def packet_broadcaster() -> None:
 
         anomaly: Optional[AnomalyEventModel] = anomaly_detector.observe(pkt)
 
+        # Persist packet to MongoDB
+        try:
+            await insert_packet(pkt)
+        except Exception as exc:
+            print(f"[analyzer] Failed to store packet: {exc}")
+
         # Broadcast packet
         await ws_manager.broadcast(
             PacketMessage(type="packet", data=pkt.dict())
@@ -70,6 +77,12 @@ async def packet_broadcaster() -> None:
 
         # Broadcast anomaly if a new one was detected
         if anomaly is not None:
+            # Persist anomaly to MongoDB
+            try:
+                await insert_anomaly(anomaly)
+            except Exception as exc:
+                print(f"[analyzer] Failed to store anomaly: {exc}")
+
             await ws_manager.broadcast(
                 PacketMessage(type="anomaly", data=anomaly.dict())
             )
@@ -78,6 +91,13 @@ async def packet_broadcaster() -> None:
 @app.on_event("startup")
 async def on_startup() -> None:
     """Start capture and broadcaster on application startup."""
+
+    # Connect to MongoDB
+    try:
+        db = await db_connect()
+        print(f"[analyzer] Connected to MongoDB: {db.name}")
+    except Exception as exc:
+        print(f"[analyzer] MongoDB connection failed: {exc}")
 
     interface = os.getenv("CAPTURE_INTERFACE") or default_interface()
     bpf = os.getenv("CAPTURE_BPF_FILTER")  # e.g. "tcp", "udp", "icmp"
@@ -92,6 +112,13 @@ async def on_startup() -> None:
 
     # Launch broadcaster task
     asyncio.create_task(packet_broadcaster())
+
+
+@app.on_event("shutdown")
+async def on_shutdown() -> None:
+    """Disconnect from MongoDB on shutdown."""
+    await db_disconnect()
+    print("[analyzer] Disconnected from MongoDB.")
 
 
 # REST endpoints -----------------------------------------------------------
@@ -111,6 +138,40 @@ async def interfaces() -> dict:
 async def stats() -> JSONResponse:
     snapshot = anomaly_detector.snapshot()
     return JSONResponse(snapshot.dict())
+
+
+@app.get("/api/packets")
+async def packets(limit: int = 100, protocol: Optional[str] = None) -> JSONResponse:
+    """Return recent packets from MongoDB."""
+    try:
+        data = await get_recent_packets(limit=limit, protocol=protocol)
+        return JSONResponse(content={"packets": data}, status_code=200)
+    except Exception as exc:
+        return JSONResponse(content={"error": str(exc)}, status_code=500)
+
+
+@app.get("/api/anomalies")
+async def anomalies(limit: int = 50) -> JSONResponse:
+    """Return recent anomalies from MongoDB."""
+    try:
+        data = await get_anomalies(limit=limit)
+        return JSONResponse(content={"anomalies": data}, status_code=200)
+    except Exception as exc:
+        return JSONResponse(content={"error": str(exc)}, status_code=500)
+
+
+@app.get("/api/db-stats")
+async def db_stats() -> JSONResponse:
+    """Return aggregate stats from MongoDB."""
+    try:
+        total = await get_total_packet_count()
+        protocol_counts = await get_protocol_stats()
+        return JSONResponse(content={
+            "total_packets": total,
+            "protocol_counts": protocol_counts,
+        })
+    except Exception as exc:
+        return JSONResponse(content={"error": str(exc)}, status_code=500)
 
 
 # WebSocket endpoint -------------------------------------------------------
