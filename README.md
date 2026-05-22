@@ -14,7 +14,10 @@ packet **headers** (Ethernet/IP/TCP/UDP/ICMP) and simple anomaly detection.
 1. Make sure **MongoDB** is running locally (default `mongodb://localhost:27017`).
    You can verify with **MongoDB Compass**.
 
-2. Start the backend (API + packet capture):
+2. Optional: set capture settings (see **Environment Variables Reference**) before
+  starting the backend if you need a specific interface or BPF filter.
+
+3. Start the backend (API + packet capture):
 
 ```bash
 cd backend
@@ -32,7 +35,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-3. Start the frontend dashboard (in a new terminal):
+4. Start the frontend dashboard (in a new terminal):
 
 ```bash
 cd frontend
@@ -40,11 +43,11 @@ npm install
 npm run dev
 ```
 
-4. Open the dashboard in your browser:
+5. Open the dashboard in your browser:
 
 - http://localhost:5173
 
-5. Open **MongoDB Compass** and connect to `mongodb://localhost:27017` to view
+6. Open **MongoDB Compass** and connect to `mongodb://localhost:27017` to view
    the `network_packet_analyzer` database with `packets` and `anomalies`
    collections.
 
@@ -246,6 +249,14 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 | `GET` | `/api/db-stats` | Aggregate stats from MongoDB (total count, protocol breakdown) |
 | `WS`  | `/ws/packets` | Real‑time WebSocket stream of packets and anomalies |
 
+### API Usage Examples
+
+```bash
+curl http://localhost:8000/api/interfaces
+curl "http://localhost:8000/api/packets?limit=20&protocol=TCP"
+curl "http://localhost:8000/api/anomalies?limit=10"
+```
+
 > On Windows, install **Npcap** (with WinPcap API compatibility); on
 > Linux/macOS, libpcap is usually available out of the box.
 > Capturing typically requires administrator / root privileges.
@@ -376,30 +387,46 @@ npm run dev
 
 ---
 
-## User Guide
+## How to Use the Application
 
 Follow this guide to effectively use the application features:
 
-### 1. Dashboard Controls
-- **Protocol Filters:** Click the buttons (TCP, UDP, ICMP, HTTP) to isolate specific traffic types in the table.
-- **Reset View:** Click **ALL** to see all traffic again.
-- **Charts:** The bar chart updates every few seconds to show the distribution of protocols.
+### 1. Confirm the live stream
+- Check the header status indicator shows **Live stream connected**.
+- If it shows **Disconnected**, verify the backend is running and that
+  `VITE_WS_URL` matches the backend WebSocket address.
 
-### 2. Reading the Packet Table
-- **Source/Destination:** Shows IP addresses and ports (e.g., `192.168.1.15:443`).
-- **Length:** The size of the packet header + payload in bytes.
-- **Real-Time Updates:** New packets appear at the top of the list.
+### 2. Filter, search, and pause the stream
+- **Protocol Filters:** Click **ALL**, **TCP**, **UDP**, **ICMP**, or **HTTP** to
+  filter the table.
+- **Search:** Filter the current stream by IP, port, or protocol using the
+  search box.
+- **Pause stream:** Freeze the table while you inspect rows, then resume.
 
-### 3. Understanding Alerts
+### 3. Export and retain data
+- **Export CSV** downloads the currently filtered rows.
+- The UI keeps the most recent **500** packets. Older packets are still stored
+  in MongoDB.
+
+### 4. Read charts and stats
+- The protocol chart and stat chips show totals since backend startup.
+- These stats reset when the backend restarts.
+
+### 5. Understand alerts
 The backend analyzes traffic patterns and pushes alerts to the frontend:
-- **Port Scan Suspected:** Indicates a single IP is trying to connect to many different ports on a target.
-- **High Traffic Volume:** Indicates a sudden spike in the number of packets per second.
+- **Port Scan Suspected:** One source hitting many destination ports.
+- **High Traffic Volume:** Sudden spike in packets per second.
 
-### 4. Advanced Data Inspection
+### 6. Advanced data inspection
 For forensic analysis, use **MongoDB Compass**:
 - **Collection:** `packets`
 - **Query Example:** `{ "src_ip": "192.168.1.10", "protocol": "TCP" }`
 - **Sort:** `{ "timestamp": -1 }` (newest first)
+
+### 7. Change capture settings
+- Set `CAPTURE_INTERFACE` and/or `CAPTURE_BPF_FILTER` before starting the
+  backend.
+- Restart the backend after changing capture settings.
 
 ---
 
@@ -411,6 +438,20 @@ For forensic analysis, use **MongoDB Compass**:
 
 You can capture screenshots from your browser and include them here when
 submitting this project.
+
+---
+
+## Troubleshooting
+
+- **No packets or Disconnected status:** Ensure the backend is running, confirm
+  `VITE_WS_URL`, run with admin/root privileges, and verify Npcap or libpcap is
+  installed.
+- **Wrong interface:** Call `/api/interfaces` to list available interfaces and
+  set `CAPTURE_INTERFACE` before starting the backend.
+- **MongoDB errors:** Ensure the MongoDB service is running and `MONGO_URI` is
+  correct.
+- **Ports already in use:** Change the backend or frontend ports and update
+  `VITE_API_BASE`/`VITE_WS_URL` as needed.
 
 ---
 
